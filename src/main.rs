@@ -1,6 +1,9 @@
 use serde_json::json;
 use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE, COOKIE};
 
+use tokio::fs::File;
+use tokio_util::codec::{BytesCodec, FramedRead};
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     wei_env::bin_init("wei-qbittorrent");
@@ -31,23 +34,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 help();
                 return Ok(());
             }
-            let url = args[2].as_str();
             let add_torrent_url = "http://localhost:10001/api/v2/torrents/add";
-            let form = [
-                ("urls", url),
-                ("autoTMM", "false"),
-                ("savepath", "C:\\Users\\Wei\\Downloads"),
-                ("cookie", ""),
-                ("rename", ""),
-                ("category", ""),
-                ("paused", "false"),
-                ("stopCondition", "None"),
-                ("contentLayout", "Original"),
-                ("dlLimit", "NaN"),
-                ("upLimit", "NaN")
-            ];
 
-            let data = client.post(add_torrent_url).headers(headers).form(&form).send().await?.text().await?;
+            // let path = args[2].as_str();
+            // let path = "C:/Users/Wei/Desktop/work/wei-release/windows/0.1.2.torrent";
+            // let file = reqwest::multipart::Part::file(path)?;
+
+            let path = args[2].as_str();
+            let file = File::open(path).await?;
+
+            let stream = FramedRead::new(file, BytesCodec::new());
+            let data = stream.map(|i| i.unwrap()).collect::<Vec<_>>().await;
+            let data = std::io::Bytes::from(data.concat());
+        
+            let file_part = reqwest::multipart::Part::stream(data)
+                .file_name("0.1.2.torrent")
+                .mime_str("application/x-bittorrent")?;
+
+            
+            let form = reqwest::multipart::Form::new()
+                .part("fileselect[]", file_part)
+                .text("autoTMM", "false")
+                .text("savepath", "C:\\Users\\Wei\\Downloads")
+                .text("rename", "")
+                .text("category", "")
+                .text("paused", "false")
+                .text("stopCondition", "None")
+                .text("contentLayout", "Original")
+                .text("dlLimit", "NaN")
+                .text("upLimit", "NaN");
+
+            let data = client.post(add_torrent_url).headers(headers).multipart(form).send().await?.text().await?;
             println!("add: {:?}", data);
         },
         "get" => {

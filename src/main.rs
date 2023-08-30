@@ -1,9 +1,6 @@
 use serde_json::json;
 use reqwest::header::{HeaderMap, HeaderValue, SET_COOKIE, COOKIE};
 
-use tokio::fs::File;
-use tokio_util::codec::{BytesCodec, FramedRead};
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     wei_env::bin_init("wei-qbittorrent");
@@ -18,10 +15,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let command = args[1].as_str();
 
     let client = reqwest::Client::builder().build()?;
+    let main_url = "http://frp004.xlai.cc:8080/";
 
-    let login_url = "http://localhost:10001/api/v2/auth/login";
+    let login_url = main_url.to_owned() + "api/v2/auth/login";
     let form = [("username", "admin"), ("password", "adminadmin")];
     let data = client.post(login_url).form(&form).send().await?;
+    
     let cookies = data.headers().get_all(SET_COOKIE).iter()
         .map(|value| value.to_str().unwrap().to_owned())
         .collect::<Vec<String>>().join("; ");
@@ -34,28 +33,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 help();
                 return Ok(());
             }
-            let add_torrent_url = "http://localhost:10001/api/v2/torrents/add";
-
-            // let path = args[2].as_str();
-            // let path = "C:/Users/Wei/Desktop/work/wei-release/windows/0.1.2.torrent";
-            // let file = reqwest::multipart::Part::file(path)?;
+            let add_torrent_url = main_url.to_owned() + "api/v2/torrents/add";
 
             let path = args[2].as_str();
-            let file = File::open(path).await?;
-
-            let stream = FramedRead::new(file, BytesCodec::new());
-            let data = stream.map(|i| i.unwrap()).collect::<Vec<_>>().await;
-            let data = std::io::Bytes::from(data.concat());
+            let file = std::path::Path::new(path);
+            let bytes = std::fs::read(file).expect("Unable to read file");
         
-            let file_part = reqwest::multipart::Part::stream(data)
+            let part = reqwest::multipart::Part::bytes(bytes)
                 .file_name("0.1.2.torrent")
                 .mime_str("application/x-bittorrent")?;
 
-            
             let form = reqwest::multipart::Form::new()
-                .part("fileselect[]", file_part)
+                .part("fileselect[]", part)
                 .text("autoTMM", "false")
-                .text("savepath", "C:\\Users\\Wei\\Downloads")
+                .text("savepath", "/home/")
                 .text("rename", "")
                 .text("category", "")
                 .text("paused", "false")
@@ -72,19 +63,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 help();
                 return Ok(());
             }
-            let url = args[2].as_str();
-            // wei_qbittorrent::get(url).await?;
+            let hash = args[2].as_str();
+            let url = main_url.to_owned() + "api/v2/torrents/info?hashes=" + hash;
+            let data = client.get(url).headers(headers).send().await?.text().await?;
+            println!("get: {:?}", data);
         },
         "del" => {
             if args.len() < 3 {
                 help();
                 return Ok(());
             }
-            let hash = args[2].as_str();
-            // wei_qbittorrent::del(hash).await?;
+            let hash = args[2].clone();
+            let url = main_url.to_owned() + "api/v2/torrents/delete";
+            let form = reqwest::multipart::Form::new()
+                .text("hashes", hash)
+                .text("deleteFiles", "true");
+            let data = client.post(url).headers(headers).multipart(form).send().await?.text().await?;
+            println!("del: {:?}", data);
         },
         "list" => {
-            // wei_qbittorrent::list().await?;
+            let url = main_url.to_owned() + "api/v2/torrents/info";
+            let data = client.get(url).headers(headers).send().await?.text().await?;
+            println!("list: {:?}", data);
         },
         _ => {
             help();

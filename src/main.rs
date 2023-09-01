@@ -1,4 +1,4 @@
-// use serde_json::json;
+use serde_json::json;
 use std::path::Path;
 use std::process::Command;
 
@@ -45,7 +45,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         
             let add_torrent_url = main_url.to_owned() + "api/v2/torrents/add";
             let data = client.post(add_torrent_url).multipart(form).send().await?.text().await?;
-            println!("add: {:?}", data);
+            if data.contains("Ok") {
+                print!("{}", json!({
+                    "code": "200",
+                    "msg": "success"
+                }).to_string());
+            } else {
+                print!("{}", json!({
+                    "code": "400",
+                    "msg": "error"
+                }).to_string());
+            }
         },
         "get" => {
             if args.len() < 3 {
@@ -55,7 +65,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let hash = args[2].as_str();
             let url = main_url.to_owned() + "api/v2/torrents/info?hashes=" + hash;
             let data = client.get(url).send().await?.text().await?;
-            println!("get: {:?}", data);
+            print!("{}", json!({
+                "code": "200",
+                "msg": "success",
+                "data": data
+            }).to_string());
         },
         "del" => {
             if args.len() < 3 {
@@ -68,12 +82,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 .text("hashes", hash)
                 .text("deleteFiles", "true");
             let data = client.post(url).multipart(form).send().await?.text().await?;
-            println!("del: {:?}", data);
+            if data.contains("Ok") {
+                print!("{}", json!({
+                    "code": "200",
+                    "msg": "success"
+                }).to_string());
+            } else {
+                print!("{}", json!({
+                    "code": "400",
+                    "msg": "error"
+                }).to_string());
+            }
         },
         "list" => {
             let url = main_url.to_owned() + "api/v2/torrents/info";
             let data = client.get(url).send().await?.text().await?;
-            println!("list: {:?}", data);
+
+            println!("{}", serde_json::from_str::<String>(&data).unwrap().to_string());
+            // print!("{}", json!({
+            //     "code": "200",
+            //     "msg": "success",
+            //     "data": json::parse(&data).unwrap()
+            // }).to_string());
         },
         "quit" => {
             let main_url = "http://127.0.0.1:10001/";

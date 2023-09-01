@@ -1179,7 +1179,7 @@ dependencies = [
 
 [[package]]
 name = "wei-qbittorrent"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "reqwest",
  "serde",
@@ -1187,6 +1187,7 @@ dependencies = [
  "serde_json",
  "tokio",
  "tokio-util",
+ "url",
  "wei-env",
 ]
 

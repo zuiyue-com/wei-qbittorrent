@@ -5,9 +5,7 @@ use std::process::Command;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     wei_env::bin_init("wei-qbittorrent");
-
     let args: Vec<String> = std::env::args().collect();
-    
 
     let mut command = "";
 
@@ -95,15 +93,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         },
         "list" => {
+            // [{"added_on":1693566863,"amount_left":12112389,"auto_tmm":false,"availability":0,"category":"","completed":3964928,"completion_on":-28800,"content_path":"C:\\Users\\Wei\\Desktop\\work\\wei-updater\\test\\data\\new\\0.1.2","dl_limit":0,"dlspeed":0,"download_path":"","downloaded":4187692,"downloaded_session":4187692,"eta":9751,"f_l_piece_prio":false,"force_start":false,"hash":"858d5efde656ff3b75ef5be8204cec505983a4d0","infohash_v1":"858d5efde656ff3b75ef5be8204cec505983a4d0","infohash_v2":"","last_activity":1693566863,"max_ratio":-1,"max_seeding_time":-1,"name":"0.1.2","num_complete":2,"num_incomplete":1,"num_leechs":0,"num_seeds":0,"priority":1,"progress":0.24661627310079162,"ratio":0,"ratio_limit":-2,"save_path":"C:\\Users\\Wei\\Desktop\\work\\wei-updater\\test\\data\\new","seeding_time":0,"seeding_time_limit":-2,"seen_complete":1693617341,"seq_dl":false,"size":16077317,"state":"stalledDL","super_seeding":false,"tags":"","time_active":50548,"total_size":16077317,"tracker":"udp://city21.pk:6969/announce","trackers_count":143,"up_limit":0,"uploaded":0,"uploaded_session":0,"upspeed":0}]
+            let mut name = "";
+            if args.len() >= 3 {
+                name = args[2].as_str();
+            }
             let url = main_url.to_owned() + "api/v2/torrents/info";
             let data = client.get(url).send().await?.text().await?;
+            let data = data.replace(",\",\"seeding_time\"", ",\"seeding_time\"");
+            if name != "" {
+                //let regex_string = format!(r#""name":"{}","num_complete":2,"num_incomplete":1,"num_leechs":0,"num_seeds":0,"priority":1,"progress":(?P<progress>\d+(\.\d+)?),"#, name);
+                let regex_string = format!(r#""name":"{}"(.*),"progress":(?P<progress>\d+(\.\d+)?),""#, name);
+                let re = regex::Regex::new(&regex_string).unwrap();
+                
+                //let haystack = r#"[{"added_on":1693566863,"amount_left":12112389,"auto_tmm":false,"availability":0,"category":"","completed":3964928,"completion_on":-28800,"content_path":"C:\\Users\\Wei\\Desktop\\work\\wei-updater\\test\\data\\new\\0.1.2","dl_limit":0,"dlspeed":0,"download_path":"","downloaded":4187692,"downloaded_session":4187692,"eta":9751,"f_l_piece_prio":false,"force_start":false,"hash":"858d5efde656ff3b75ef5be8204cec505983a4d0","infohash_v1":"858d5efde656ff3b75ef5be8204cec505983a4d0","infohash_v2":"","last_activity":1693566863,"max_ratio":-1,"max_seeding_time":-1,"name":"0.1.2","num_complete":2,"num_incomplete":1,"num_leechs":0,"num_seeds":0,"priority":1,"progress":0.24661627310079162,"ratio":0,"ratio_limit":-2,"save_path":"C:\\Users\\Wei\\Desktop\\work\\wei-updater\\test\\data\\new","seeding_time":0,"seeding_time_limit":-2,"seen_complete":1693617341,"seq_dl":false,"size":16077317,"state":"stalledDL","super_seeding":false,"tags":"","time_active":50548,"total_size":16077317,"tracker":"udp://city21.pk:6969/announce","trackers_count":143,"up_limit":0,"uploaded":0,"uploaded_session":0,"upspeed":0}]"#;
+                let caps = re.captures(data.as_str()).unwrap();
 
-            println!("{}", serde_json::from_str::<String>(&data).unwrap().to_string());
-            // print!("{}", json!({
-            //     "code": "200",
-            //     "msg": "success",
-            //     "data": json::parse(&data).unwrap()
-            // }).to_string());
+                println!("{}", &caps["progress"]);
+                return Ok(());
+            }
+            println!("{}", data);
         },
         "quit" => {
             let main_url = "http://127.0.0.1:10001/";
@@ -130,7 +139,7 @@ fn help() {
     println!("  {} add <url> <savepath>", args[0]);
     println!("  {} get <hash>", args[0]);
     println!("  {} del <hash>", args[0]);
-    println!("  {} list", args[0]);
+    println!("  {} list <option:name>", args[0]);
     println!("  {} help", args[0]);
 }
 

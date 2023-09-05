@@ -1,3 +1,56 @@
+状态表：
+
+case "forcedDL":
+case "metaDL":
+case "forcedMetaDL":
+case "downloading":
+    state = "downloading";
+    img_path = "images/downloading.svg";
+    break;
+case "forcedUP":
+case "uploading":
+    state = "uploading";
+    img_path = "images/upload.svg";
+    break;
+case "stalledUP":
+    state = "stalledUP";
+    img_path = "images/stalledUP.svg";
+    break;
+case "stalledDL":
+    state = "stalledDL";
+    img_path = "images/stalledDL.svg";
+    break;
+case "pausedDL":
+    state = "torrent-stop";
+    img_path = "images/stopped.svg";
+    break;
+case "pausedUP":
+    state = "checked-completed";
+    img_path = "images/checked-completed.svg";
+    break;
+case "queuedDL":
+case "queuedUP":
+    state = "queued";
+    img_path = "images/queued.svg";
+    break;
+case "checkingDL":
+case "checkingUP":
+case "queuedForChecking":
+case "checkingResumeData":
+case "moving":
+    state = "force-recheck";
+    img_path = "images/force-recheck.svg";
+    break;
+case "unknown":
+case "missingFiles":
+    state = "error";
+    img_path = "images/error.svg";
+    break;
+
+
+regex:
+"hash":"(.*)","infohash_v1"(.*)"name":"(.*)"(.*),"progress":(\d+(\.\d+)?),"(.*)"state":"(.*)","super_seeding"
+
 list:
 [{"added_on":1693566863,"amount_left":0,
 "auto_tmm":false,"availability":-1,

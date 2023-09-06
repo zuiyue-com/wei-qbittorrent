@@ -197,6 +197,12 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         std::process::exit(1);
     };
 
+    // 确认接口是否开启，如果没有开启，要关闭进程。
+    if wei_run::is_process_running("qbittorrent") == true {
+        println!("qbittorrent is running");
+        return Ok(());
+    }
+
     let main_url = "http://127.0.0.1:10001/";
     let client = reqwest::Client::builder().build()?;
     let url = main_url.to_owned() + "api/v2/app/shutdown";

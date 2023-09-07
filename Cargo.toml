@@ -1,6 +1,6 @@
 [package]
 name = "wei-qbittorrent"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "wei qbittorrent"
 documentation = "https://github.com/zuiyue-com/wei-qbittorrent"

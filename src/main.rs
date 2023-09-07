@@ -155,7 +155,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("{}", data);
         },
         "quit" => {
-            let main_url = "http://127.0.0.1:10001/";
             let client = reqwest::Client::builder().build()?;
             let url = main_url.to_owned() + "api/v2/app/shutdown";
             let data = client.post(url).send().await?.text().await?;
@@ -197,16 +196,17 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         std::process::exit(1);
     };
 
-    // 确认接口是否开启，如果没有开启，要关闭进程。
-    if wei_run::is_process_running("qbittorrent") == true {
-        println!("qbittorrent is running");
+    let main_url = "http://127.0.0.1:10001/";
+    let client = reqwest::Client::builder().build()?;
+    let url = main_url.to_owned() + "api/v2/auth/login";
+    let data = client.post(url).send().await?.text().await?;
+
+    if data.contains("Ok") {
+        println!("qbittorrent is running in api mode");
         return Ok(());
     }
 
-    let main_url = "http://127.0.0.1:10001/";
-    let client = reqwest::Client::builder().build()?;
-    let url = main_url.to_owned() + "api/v2/app/shutdown";
-    client.post(url).send().await?.text().await?;
+    wei_run::kill("qbittorrent")?;
 
     let os = std::env::consts::OS;
     let command = match os {
@@ -218,19 +218,16 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let home = std::env::var("USERPROFILE").unwrap();
     let qbittorrent_ini = format!("{}/AppData/Roaming/qBittorrent/qBittorrent.ini", home);
     let qbittorrent_ini_path = Path::new(&qbittorrent_ini);
-    if !qbittorrent_ini_path.exists() {
-        let qbittorrent_ini_dir = format!("{}/AppData/Roaming/qBittorrent", home);
-        let qbittorrent_ini_dir_path = Path::new(&qbittorrent_ini_dir);
-        if !qbittorrent_ini_dir_path.exists() {
-            std::fs::create_dir_all(qbittorrent_ini_dir_path).unwrap();
-        }
-        let source = "./qbittorrent/qBittorrent.ini";
-        let source_path = Path::new(source);
-        if source_path.exists() {
-            std::fs::copy(source_path, qbittorrent_ini_path).unwrap();
-        }
+    
+    let qbittorrent_ini_dir = format!("{}/AppData/Roaming/qBittorrent", home);
+    let qbittorrent_ini_dir_path = Path::new(&qbittorrent_ini_dir);
+    if !qbittorrent_ini_dir_path.exists() {
+        std::fs::create_dir_all(qbittorrent_ini_dir_path).unwrap();
     }
-
+    let source = "./qbittorrent/qBittorrent.ini";
+    let source_path = Path::new(source);
+    std::fs::copy(source_path, qbittorrent_ini_path).unwrap();
+    
     match Command::new(command).spawn() {
         Ok(out) => {
             println!("Success: {:?}", out);
@@ -247,10 +244,6 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 } 
-
-// 检查windows系统是否安装了qbittorrent,并且是否开启了端口10001,如果没有
-// 检查系统进程是否存在qbittorrent,如果不存在则运行qbittorrent.检查api端口是否开启成功
-
 
 // 下载文件，并存放到指定目录
 async fn download(url_str: &str) {

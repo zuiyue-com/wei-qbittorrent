@@ -1433,9 +1433,9 @@ dependencies = [
 
 [[package]]
 name = "wei-run"
-version = "0.1.18"
+version = "0.1.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4220001bcf783777adfea4a4d199a90cb9420c3cea60eb34ecf0557c69172ca6"
+checksum = "ec234ffc2e4a71600c9c099d5805b3bcfb75b750f56b1f165d7777e4e39b9e46"
 dependencies = [
  "procfs",
  "wei-env",

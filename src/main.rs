@@ -98,6 +98,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "data": data
             }).to_string());
         }
+        "recheck" => {
+            if args.len() < 3 {
+                help();
+                return Ok(());
+            }
+            let hash = args[2].clone();
+            let url = main_url.to_owned() + "api/v2/torrents/recheck";
+        
+            let form = reqwest::multipart::Form::new().text("hashes", hash);
+            let data = client.post(url).multipart(form).send().await?.text().await?;
+            print!("{}", json!({
+                "code": "200",
+                "msg": "success",
+                "data": data
+            }).to_string());
+        }
         "set-location" => {
             if args.len() < 4 {
                 help();
@@ -215,6 +231,7 @@ fn help() {
     println!("  {} add <url> <savepath>", args[0]);
     println!("  {} get <hash>", args[0]);
     println!("  {} resume <hash>", args[0]);
+    println!("  {} recheck <hash>", args[0]);
     println!("  {} set-location <hash> <location>", args[0]);
     println!("  {} del <hash>", args[0]);
     println!("  {} list <option:name>", args[0]);

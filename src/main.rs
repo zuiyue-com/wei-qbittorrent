@@ -1,9 +1,9 @@
 use serde_json::json;
-use serde::Deserialize;
+use serde::{Serialize,Deserialize};
 use std::path::Path;
 use std::process::Command;
 
-#[derive(Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug)]
 struct Torrent {
     dlspeed: i64,
     hash: String,
@@ -164,11 +164,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let url = main_url.to_owned() + "api/v2/torrents/info";
             let data = client.get(url).send().await?.text().await?;
             let data = data.replace(",\",\"seeding_time\"", ",\"seeding_time\"");
-            let torrents:Vec<Torrent> = serde_json::from_str(&data).unwrap();
-            for torrent in torrents {
-                if name != "" && !torrent.name.contains(name) {
+            let torrents: Vec<Torrent> = serde_json::from_str(&data).unwrap();
+
+            for torrent in &torrents {
+                if torrent.name != name {
                     continue;
                 }
+                
                 print!("{}", json!({
                     "code": "200",
                     "msg": "success",
@@ -185,27 +187,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }).to_string());
                 return Ok(());
             }
-            println!("{}", data);
 
-            // if name != "" {
-            //     // "hash":"(.*)","infohash_v1"(.*)"name":"0.1.14"(.*),"progress":(\d+(\.\d+)?),"(.*)"save_path":"(.*)","(.*)"state":"(.*)","super_seeding
-            //     let regex_string = format!(r#"hash":"(?P<hash>.*)","infohash_v1"(.*)"name":"{}"(.*),"progress":(?P<progress>\d+(\.\d+)?),"(.*)"save_path":"(?P<save_path>.*)","(.*)"state":"(?P<state>.*)","super_seeding"#, name);
-            //     let re = regex::Regex::new(&regex_string).unwrap();
-            //     let caps = re.captures(data.as_str()).unwrap();
-
-            //     print!("{}",json!({
-            //         "code": "200",
-            //         "msg": "success",
-            //         "data": {
-            //             "hash": &caps["hash"],
-            //             "progress": &caps["progress"],
-            //             "save_path": &caps["save_path"],
-            //             "state": &caps["state"]
-            //         }
-            //     }).to_string());
-            //     return Ok(());
-            // }
-            // println!("{}", data);
+            print!("{}", json!({
+                "code": "200",
+                "msg": "success",
+                "data": torrents
+            }));
+            
         },
         "quit" => {
             let client = reqwest::Client::builder().build()?;

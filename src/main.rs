@@ -190,9 +190,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if name != "" {
                 print!("{}", json!({
-                    "code": "400",
-                    "msg": "error",
-                    "data": "not found"
+                    "code": "200",
+                    "msg": "success",
+                    "data": {}
                 }).to_string());
                 return Ok(());
             } 

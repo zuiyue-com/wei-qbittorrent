@@ -9,6 +9,7 @@
 - [ ] natmap
 - [ ] nebula
 - [ ] libp2p relay server
+- [ ] frp xtcp
 
 # 设置
 

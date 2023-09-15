@@ -143,7 +143,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let form = reqwest::multipart::Form::new()
                 .text("hashes", hash)
                 .text("deleteFiles", "true");
-            let data = client.post(url).multipart(form).send().await?.text().await?;
+            client.post(url).multipart(form).send().await?.text().await?;
             
             print!("{}", json!({
                 "code": "200",

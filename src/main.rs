@@ -133,7 +133,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 "data": data
             }).to_string());
         }
-        "del" => {
+        "delete" => {
             if args.len() < 3 {
                 help();
                 return Ok(());

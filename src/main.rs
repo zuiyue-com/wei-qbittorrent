@@ -3,6 +3,9 @@ use serde::{Serialize,Deserialize};
 use std::path::Path;
 use std::process::Command;
 
+#[macro_use]
+extern crate wei_log;
+
 #[derive(Serialize, Deserialize, Debug)]
 struct Torrent {
     dlspeed: i64,
@@ -241,16 +244,25 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         std::process::exit(1);
     };
 
+    info!("设置API接口地址");
     let main_url = "http://127.0.0.1:10001/";
     let client = reqwest::Client::builder().build()?;
     let url = main_url.to_owned() + "api/v2/auth/login";
-    let data = client.post(url).send().await?.text().await?;
-
+    info!("检查qbittorrent是否运行");
+    let data = match client.post(url).send().await {
+        Ok(data) => data.text().await?,
+        Err(err) => {
+            info!("qbittorrent没有运行，准备启动: {:?}", err);
+            "No".to_string()
+        }
+    };
+    
     if data.contains("Ok") {
-        println!("qbittorrent is running in api mode");
+        info!("qbittorrent is running in api mode");
         return Ok(());
     }
 
+    info!("qbittorrent没有运行，准备启动");
     wei_run::kill("qbittorrent")?;
 
     let os = std::env::consts::OS;

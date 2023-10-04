@@ -12,7 +12,7 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 wei-env = "0.2.4"
-wei-run = "0.2.1"
+wei-run = "0.2.2"
 wei-log = "0.2.5"
 reqwest = { version = "0.11", features = ["json", "multipart"] }
 serde = "1"

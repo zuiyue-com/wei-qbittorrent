@@ -61,13 +61,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let data = client.post(add_torrent_url).multipart(form).send().await?.text().await?;
             if data.contains("Ok") {
                 print!("{}", json!({
-                    "code": "200",
-                    "msg": "success"
+                    "code": 200,
+                    "message": "success"
                 }).to_string());
             } else {
                 print!("{}", json!({
-                    "code": "400",
-                    "msg": "error"
+                    "code": 400,
+                    "message": "error"
                 }).to_string());
             }
         },
@@ -80,8 +80,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let url = main_url.to_owned() + "api/v2/torrents/info?hashes=" + hash;
             let data = client.get(url).send().await?.text().await?;
             print!("{}", json!({
-                "code": "200",
-                "msg": "success",
+                "code": 200,
+                "message": "success",
                 "data": data
             }).to_string());
         },
@@ -96,8 +96,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let form = reqwest::multipart::Form::new().text("hashes", hash);
             let data = client.post(url).multipart(form).send().await?.text().await?;
             print!("{}", json!({
-                "code": "200",
-                "msg": "success",
+                "code": 200,
+                "message": "success",
                 "data": data
             }).to_string());
         }
@@ -112,8 +112,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             let form = reqwest::multipart::Form::new().text("hashes", hash);
             let data = client.post(url).multipart(form).send().await?.text().await?;
             print!("{}", json!({
-                "code": "200",
-                "msg": "success",
+                "code": 200,
+                "message": "success",
                 "data": data
             }).to_string());
         }
@@ -131,8 +131,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             .text("location", location);
             let data = client.post(url).multipart(form).send().await?.text().await?;
             print!("{}", json!({
-                "code": "200",
-                "msg": "success",
+                "code": 200,
+                "message": "success",
                 "data": data
             }).to_string());
         }
@@ -149,8 +149,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             client.post(url).multipart(form).send().await?.text().await?;
             
             print!("{}", json!({
-                "code": "200",
-                "msg": "success"
+                "code": 200,
+                "message": "success"
             }).to_string());
         },
         "list" => {
@@ -169,8 +169,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 
                 print!("{}", json!({
-                    "code": "200",
-                    "msg": "success",
+                    "code": 200,
+                    "message": "success",
                     "data": {
                         "hash": torrent.hash,
                         "progress": torrent.progress,
@@ -187,16 +187,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
             if name != "" {
                 print!("{}", json!({
-                    "code": "200",
-                    "msg": "success",
+                    "code": 200,
+                    "message": "success",
                     "data": {}
                 }).to_string());
                 return Ok(());
             } 
 
             print!("{}", json!({
-                "code": "200",
-                "msg": "success",
+                "code": 200,
+                "message": "success",
                 "data": torrents
             }));
             

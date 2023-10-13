@@ -255,7 +255,7 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
         }
 
         info!("检查qbittorrent是否运行");
-        let data = match client.post(url).send().await {
+        let data = match client.post(url.clone()).send().await {
             Ok(data) => data.text().await?,
             Err(err) => format!("{:?}", err)
         };

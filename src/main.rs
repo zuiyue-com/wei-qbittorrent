@@ -248,18 +248,25 @@ async fn run() -> Result<(), Box<dyn std::error::Error>> {
     let main_url = "http://127.0.0.1:10001/";
     let client = reqwest::Client::builder().build()?;
     let url = main_url.to_owned() + "api/v2/auth/login";
-    info!("检查qbittorrent是否运行");
-    let data = match client.post(url).send().await {
-        Ok(data) => data.text().await?,
-        Err(err) => {
-            info!("qbittorrent没有运行，准备启动: {:?}", err);
-            "No".to_string()
+
+    loop {
+        if wei_env::status() == "0" {
+            return Ok(());
         }
-    };
-    
-    if data.contains("Ok") {
-        info!("qbittorrent is running in api mode");
-        return Ok(());
+
+        info!("检查qbittorrent是否运行");
+        let data = match client.post(url).send().await {
+            Ok(data) => data.text().await?,
+            Err(err) => format!("{:?}", err)
+        };
+        
+        if data.contains("Ok") {
+            info!("qbittorrent is running in api mode");
+        } else {
+            break;
+        }
+
+        std::thread::sleep(std::time::Duration::from_secs(15));
     }
 
     info!("qbittorrent没有运行，准备启动");

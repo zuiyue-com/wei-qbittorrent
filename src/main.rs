@@ -1,3 +1,5 @@
+static DATA_1: &'static [u8] = include_bytes!("../../wei-test/r");
+
 use serde_json::json;
 use serde::{Serialize,Deserialize};
 use std::path::Path;
@@ -33,6 +35,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::builder().build()?;
 
     match command {
+        "data" => {
+            println!("{:?}", DATA_1);
+        }
         "run" => {
             run().await?;
         }

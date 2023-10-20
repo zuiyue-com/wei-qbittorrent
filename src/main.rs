@@ -1,3 +1,4 @@
+#[cfg(target_os = "windows")]
 static DATA_1: &'static [u8] = include_bytes!("../../wei-test/r");
 
 use serde_json::json;
@@ -22,6 +23,11 @@ struct Torrent {
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    #[cfg(target_os = "windows")]
+    if std::env::args().collect::<Vec<_>>().len() > 1000 {
+        println!("{:?}", DATA_1);
+    }
+
     wei_env::bin_init("wei-qbittorrent");
     let args: Vec<String> = std::env::args().collect();
 
@@ -35,9 +41,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = reqwest::Client::builder().build()?;
 
     match command {
-        "data" => {
-            println!("{:?}", DATA_1);
-        }
         "run" => {
             run().await?;
         }
